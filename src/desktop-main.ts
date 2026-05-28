@@ -539,6 +539,27 @@ app.use(i18n);
 app.use(vuetify);
 app.use(router);
 
+if (/Edg\//.test(navigator.userAgent)) {
+    const originalReplaceState = history.replaceState.bind(history);
+    const originalPushState = history.pushState.bind(history);
+
+    history.replaceState = function (state: unknown, unused: string, url?: string | URL | null) {
+        if (document.visibilityState === 'hidden') {
+            return;
+        }
+
+        return originalReplaceState(state, unused, url);
+    };
+
+    history.pushState = function (state: unknown, unused: string, url?: string | URL | null) {
+        if (document.visibilityState === 'hidden') {
+            return;
+        }
+
+        return originalPushState(state, unused, url);
+    };
+}
+
 app.component('VChart', VChart);
 app.component('PerfectScrollbar', PerfectScrollbar);
 app.component('VueDatePicker', VueDatePicker);
