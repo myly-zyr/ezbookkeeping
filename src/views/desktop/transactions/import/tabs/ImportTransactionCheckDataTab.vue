@@ -899,6 +899,12 @@ const toolMenus = computed<ImportTransactionCheckDataMenu[]>(() => [
     },
     {
         prependIcon: mdiShapePlusOutline,
+        title: tt('Create Nonexistent Accounts'),
+        disabled: isEditing.value || !allInvalidAccountNames.value || allInvalidAccountNames.value.length < 1,
+        onClick: () => showBatchCreateInvalidItemDialog('account', allInvalidAccountNames.value)
+    },
+    {
+        prependIcon: mdiShapePlusOutline,
         title: tt('Create Nonexistent Transaction Tags'),
         disabled: isEditing.value || !allInvalidTransactionTagNames.value || allInvalidTransactionTagNames.value.length < 1,
         onClick: () => showBatchCreateInvalidItemDialog('tag', allInvalidTransactionTagNames.value)
@@ -2045,7 +2051,21 @@ function showBatchCreateInvalidItemDialog(type: BatchCreateDialogDataType, inval
 
                 let updated = false;
 
-                if (type === 'expenseCategory' || type === 'incomeCategory' || type === 'transferCategory') {
+                if (type === 'account') {
+                    const sourceTarget = sourceTargetMap[importTransaction.originalSourceAccountName];
+                    if (sourceTarget && (!importTransaction.sourceAccountId || importTransaction.sourceAccountId === '0' || !allAccountsMap.value[importTransaction.sourceAccountId])) {
+                        importTransaction.sourceAccountId = sourceTarget;
+                        updated = true;
+                    }
+
+                    if (importTransaction.type === TransactionType.Transfer && isString(importTransaction.originalDestinationAccountName)) {
+                        const destTarget = sourceTargetMap[importTransaction.originalDestinationAccountName];
+                        if (destTarget && (!importTransaction.destinationAccountId || importTransaction.destinationAccountId === '0' || !allAccountsMap.value[importTransaction.destinationAccountId])) {
+                            importTransaction.destinationAccountId = destTarget;
+                            updated = true;
+                        }
+                    }
+                } else if (type === 'expenseCategory' || type === 'incomeCategory' || type === 'transferCategory') {
                     const categoryId = importTransaction.categoryId;
                     const originalCategoryName = importTransaction.originalCategoryName;
                     const targetItem = sourceTargetMap[originalCategoryName];

@@ -7,6 +7,7 @@
                     <h4 class="text-h4 text-wrap" v-if="type === 'incomeCategory'">{{ tt('Create Nonexistent Income Categories') }}</h4>
                     <h4 class="text-h4 text-wrap" v-if="type === 'transferCategory'">{{ tt('Create Nonexistent Transfer Categories') }}</h4>
                     <h4 class="text-h4 text-wrap" v-if="type === 'tag'">{{ tt('Create Nonexistent Transaction Tags') }}</h4>
+                    <h4 class="text-h4 text-wrap" v-if="type === 'account'">{{ tt('Create Nonexistent Accounts') }}</h4>
                     <v-spacer/>
                     <v-btn density="comfortable" color="default" variant="text" class="ms-2"
                            :disabled="submitting || !invalidItems || !invalidItems.length" :icon="true">
@@ -32,6 +33,20 @@
             </template>
             <v-card-text class="d-flex flex-column flex-md-row flex-grow-1 overflow-y-auto">
                 <v-row>
+                    <v-col cols="12" class="px-0" v-if="type === 'account'">
+                        <v-select
+                            :items="accountCategories"
+                            item-title="name"
+                            item-value="type"
+                            v-model="selectedAccountCategory"
+                            :label="tt('Account Category')"
+                            :disabled="submitting"
+                            density="compact"
+                            variant="outlined"
+                            class="mb-2"
+                            persistent-placeholder
+                        />
+                    </v-col>
                     <v-col cols="12" class="px-0">
                         <v-list class="py-0" density="compact" select-strategy="classic"
                                 :disabled="submitting" v-model:selected="selectedNames">
@@ -73,6 +88,11 @@ import { useI18n } from '@/locales/helpers.ts';
 
 import { useTransactionCategoriesStore } from '@/stores/transactionCategory.ts';
 import { useTransactionTagsStore } from '@/stores/transactionTag.ts';
+import { useAccountsStore } from '@/stores/account.ts';
+import { useUserStore } from '@/stores/user.ts';
+
+import { AccountCategory } from '@/core/account.ts';
+import { Account } from '@/models/account.ts';
 
 import { type NameValue, values } from '@/core/base.ts';
 import { CategoryType } from '@/core/category.ts';
@@ -92,7 +112,7 @@ import {
     mdiDotsVertical
 } from '@mdi/js';
 
-export type BatchCreateDialogDataType = 'expenseCategory' | 'incomeCategory' | 'transferCategory' | 'tag';
+export type BatchCreateDialogDataType = 'expenseCategory' | 'incomeCategory' | 'transferCategory' | 'tag' | 'account';
 
 type SnackBarType = InstanceType<typeof SnackBar>;
 
@@ -104,14 +124,22 @@ const { tt } = useI18n();
 
 const transactionCategoriesStore = useTransactionCategoriesStore();
 const transactionTagsStore = useTransactionTagsStore();
+const accountsStore = useAccountsStore();
+const userStore = useUserStore();
 
 const snackbar = useTemplateRef<SnackBarType>('snackbar');
 
 const showState = ref<boolean>(false);
 const submitting = ref<boolean>(false);
-const type = ref<BatchCreateDialogDataType | ''>('');
+const type = ref<BatchCreateDialogDataType>('expenseCategory');
 const invalidItems = ref<NameValue[] | undefined>([]);
 const selectedNames = ref<string[]>([]);
+const selectedAccountCategory = ref<number>(AccountCategory.CheckingAccount.type);
+const accountCategories = AccountCategory.values().map(cat => ({
+    type: cat.type,
+    name: tt(cat.name),
+    originalName: cat.name
+}));
 
 let resolveFunc: ((response: BatchCreateDialogResponse) => void) | null = null;
 let rejectFunc: ((reason?: unknown) => void) | null = null;
@@ -191,7 +219,7 @@ function buildBatchCreateTagResponse(createdTags: TransactionTag[]): BatchCreate
 }
 
 function open(options: { type: BatchCreateDialogDataType, invalidItems?: NameValue[] }): Promise<BatchCreateDialogResponse> {
-    type.value = options.type;
+    type.value = options.type || 'expenseCategory';
     invalidItems.value = options.invalidItems;
     selectedNames.value = [];
 
@@ -309,6 +337,59 @@ function confirm(): void {
         }).catch(error => {
             submitting.value = false;
 
+            if (!error.processed) {
+                snackbar.value?.showError(error);
+            }
+        });
+    } else if (type.value === 'account') {
+        submitting.value = true;
+
+        const defaultCurrency = userStore.currentUserDefaultCurrency;
+        const accountCategory = AccountCategory.valueOf(selectedAccountCategory.value);
+        const balanceTime = new Date().getTime();
+        const sourceTargetMap: Record<string, string> = {};
+
+        if (!accountCategory) {
+            submitting.value = false;
+            snackbar.value?.showError('Invalid account category');
+            return;
+        }
+
+        function createNextAccount(index: number): void {
+            if (index >= selectedNames.value.length) {
+                submitting.value = false;
+                showState.value = false;
+                resolveFunc?.({ sourceTargetMap });
+                return;
+            }
+
+            const accountName = selectedNames.value[index];
+            const account = Account.createNewAccount(accountCategory!, defaultCurrency, balanceTime);
+            account.name = accountName || '';
+
+            accountsStore.saveAccount({
+                account: account,
+                subAccounts: [],
+                isEdit: false,
+                clientSessionId: ''
+            }).then(savedAccount => {
+                const originalItem = (invalidItems.value || []).find(item => item.name === accountName);
+                if (originalItem) {
+                    sourceTargetMap[originalItem.value] = (savedAccount.id as string) || '';
+                }
+                createNextAccount(index + 1);
+            }).catch(error => {
+                if (!error.processed) {
+                    snackbar.value?.showError(error);
+                }
+                createNextAccount(index + 1);
+            });
+        }
+
+        accountsStore.loadAllAccounts({ force: true }).then(() => {
+            createNextAccount(0);
+        }).catch(error => {
+            submitting.value = false;
             if (!error.processed) {
                 snackbar.value?.showError(error);
             }
