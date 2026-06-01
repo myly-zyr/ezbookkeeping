@@ -236,6 +236,7 @@
                             ref="importTransactionCheckDataTab"
                             :import-transactions="importTransactions"
                             :disabled="loading || submitting"
+                            :file-type="fileType"
                         />
                     </v-window-item>
                     <v-window-item value="finalResult">

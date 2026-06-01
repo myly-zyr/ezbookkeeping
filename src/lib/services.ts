@@ -133,6 +133,13 @@ import type {
     TransactionTemplateInfoResponse
 } from '@/models/transaction_template.ts';
 import type {
+    ImportReplaceRuleSetInfoResponse,
+    ImportReplaceRuleSetDetailResponse,
+    ImportReplaceRuleSetCreateRequest,
+    ImportReplaceRuleSetModifyRequest,
+    ImportReplaceRuleSetDeleteRequest
+} from '@/models/import_replace_rule.ts';
+import type {
     InsightsExplorerCreateRequest,
     InsightsExplorerModifyRequest,
     InsightsExplorerHideRequest,
@@ -815,6 +822,27 @@ export default {
     },
     deleteTransactionTemplate: (req: TransactionTemplateDeleteRequest): ApiResponsePromise<boolean> => {
         return axios.post<ApiResponse<boolean>>('v1/transaction/templates/delete.json', req);
+    },
+    getAllImportReplaceRuleSets: (): ApiResponsePromise<ImportReplaceRuleSetInfoResponse[]> => {
+        return axios.get<ApiResponse<ImportReplaceRuleSetInfoResponse[]>>('v1/import_replace_rule_sets/list.json');
+    },
+    getImportReplaceRuleSet: ({ id }: { id: string }): ApiResponsePromise<ImportReplaceRuleSetDetailResponse> => {
+        return axios.get<ApiResponse<ImportReplaceRuleSetDetailResponse>>('v1/import_replace_rule_sets/get.json?id=' + id);
+    },
+    getDefaultImportReplaceRuleSetByFileType: ({ fileType }: { fileType: string }): ApiResponsePromise<ImportReplaceRuleSetDetailResponse> => {
+        return axios.get<ApiResponse<ImportReplaceRuleSetDetailResponse>>('v1/import_replace_rule_sets/get_default_by_file_type.json?fileType=' + fileType);
+    },
+    addImportReplaceRuleSet: (req: ImportReplaceRuleSetCreateRequest): ApiResponsePromise<ImportReplaceRuleSetInfoResponse> => {
+        return axios.post<ApiResponse<ImportReplaceRuleSetInfoResponse>>('v1/import_replace_rule_sets/add.json', req);
+    },
+    modifyImportReplaceRuleSet: (req: ImportReplaceRuleSetModifyRequest): ApiResponsePromise<boolean> => {
+        return axios.post<ApiResponse<boolean>>('v1/import_replace_rule_sets/modify.json', req);
+    },
+    setDefaultImportReplaceRuleSet: (req: { id: string; fileType: string }): ApiResponsePromise<boolean> => {
+        return axios.post<ApiResponse<boolean>>('v1/import_replace_rule_sets/set_default.json', req);
+    },
+    deleteImportReplaceRuleSet: (req: ImportReplaceRuleSetDeleteRequest): ApiResponsePromise<boolean> => {
+        return axios.post<ApiResponse<boolean>>('v1/import_replace_rule_sets/delete.json', req);
     },
     getAllInsightsExplorers: (): ApiResponsePromise<InsightsExplorerInfoResponse[]> => {
         return axios.get<ApiResponse<InsightsExplorerInfoResponse[]>>('v1/insights/explorers/list.json');

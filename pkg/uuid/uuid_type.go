@@ -15,5 +15,6 @@ const (
 	UUID_TYPE_TEMPLATE    UuidType = 7
 	UUID_TYPE_PICTURE     UuidType = 8
 	UUID_TYPE_EXPLORER    UuidType = 9
-	UUID_TYPE_TAG_GROUP   UuidType = 10
+	UUID_TYPE_TAG_GROUP               UuidType = 10
+	UUID_TYPE_IMPORT_REPLACE_RULE_SET UuidType = 11
 )

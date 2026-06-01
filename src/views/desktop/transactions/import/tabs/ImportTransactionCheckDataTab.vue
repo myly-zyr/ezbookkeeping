@@ -505,6 +505,7 @@ interface ImportTransactionCheckDataMenu {
 const props = defineProps<{
     importTransactions?: ImportTransaction[]
     disabled?: boolean;
+    fileType?: string;
 }>();
 
 const {
@@ -1947,6 +1948,7 @@ function showReplaceAllTypesDialog(): void {
     }
 
     batchReplaceAllTypesDialog.value?.open({
+        fileType: props.fileType,
         expenseCategoryNames: allInvalidExpenseCategoryNames.value,
         incomeCategoryNames: allInvalidIncomeCategoryNames.value,
         transferCategoryNames: allInvalidTransferCategoryNames.value,

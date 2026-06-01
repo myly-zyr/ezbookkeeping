@@ -453,6 +453,15 @@ func startWebServer(c *core.CliContext) error {
 			apiV1Route.POST("/transaction/templates/move.json", bindApi(api.TransactionTemplates.TemplateMoveHandler))
 			apiV1Route.POST("/transaction/templates/delete.json", bindApi(api.TransactionTemplates.TemplateDeleteHandler))
 
+			// Import Replace Rule Sets
+			apiV1Route.GET("/import_replace_rule_sets/list.json", bindApi(api.ImportReplaceRules.ImportReplaceRuleSetListHandler))
+			apiV1Route.GET("/import_replace_rule_sets/get.json", bindApi(api.ImportReplaceRules.ImportReplaceRuleSetGetHandler))
+			apiV1Route.GET("/import_replace_rule_sets/get_default_by_file_type.json", bindApi(api.ImportReplaceRules.ImportReplaceRuleSetGetDefaultByFileTypeHandler))
+			apiV1Route.POST("/import_replace_rule_sets/add.json", bindApi(api.ImportReplaceRules.ImportReplaceRuleSetCreateHandler))
+			apiV1Route.POST("/import_replace_rule_sets/modify.json", bindApi(api.ImportReplaceRules.ImportReplaceRuleSetModifyHandler))
+			apiV1Route.POST("/import_replace_rule_sets/set_default.json", bindApi(api.ImportReplaceRules.ImportReplaceRuleSetSetDefaultHandler))
+			apiV1Route.POST("/import_replace_rule_sets/delete.json", bindApi(api.ImportReplaceRules.ImportReplaceRuleSetDeleteHandler))
+
 			// Insights Explorers
 			apiV1Route.GET("/insights/explorers/list.json", bindApi(api.InsightsExplorers.InsightsExplorerListHandler))
 			apiV1Route.GET("/insights/explorers/get.json", bindApi(api.InsightsExplorers.InsightsExplorerGetHandler))
