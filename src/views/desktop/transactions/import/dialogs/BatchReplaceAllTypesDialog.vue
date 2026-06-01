@@ -30,7 +30,7 @@
                                              :prepend-icon="mdiFileDocumentOutline"
                                              :title="rs.name"
                                              :subtitle="rs.ruleCount + ' ' + tt('rules')"
-                                             :active="rs.id === currentRuleSetId.value"
+                                             :active="rs.id === currentRuleSetId"
                                              @click="loadOtherRuleSet(rs.id)">
                                     <template #append>
                                         <v-btn v-if="!rs.isDefault" density="compact" variant="text" color="error"
@@ -339,7 +339,10 @@ let rejectFunc: ((reason?: unknown) => void) | null = null;
 const defaultRuleSetName = computed(() => getDefaultRuleSetName(currentFileType.value));
 
 const allRuleSetsList = computed(() => {
-    return savedRuleSets.value;
+    return savedRuleSets.value.map(rs => ({
+        ...rs,
+        isDefault: rs.name === defaultRuleSetName.value
+    }));
 });
 
 const showAccountBalance = computed<boolean>(() => settingsStore.appSettings.showAccountBalance);
@@ -524,9 +527,9 @@ function loadRuleSetsFromDatabase(): void {
         savedRuleSets.value = result.map(rs => ({ id: rs.id, name: rs.name, ruleCount: rs.ruleCount }));
 
         // Try to get default rule set for this file type from database
-        importReplaceRuleStore.getDefaultByFileType(currentFileType).then(defaultResult => {
+        importReplaceRuleStore.getDefaultByFileType(currentFileType.value).then(defaultResult => {
             if (defaultResult && defaultResult.id) {
-                currentRuleSetId = defaultResult.id;
+                currentRuleSetId.value = defaultResult.id;
                 const parsedRules: ImportTransactionReplaceRule[] = [];
                 for (const rule of defaultResult.rules) {
                     parsedRules.push(ImportTransactionReplaceRule.of(rule.type as ImportTransactionReplaceRule['dataType'], rule.sourceValue, rule.targetId));

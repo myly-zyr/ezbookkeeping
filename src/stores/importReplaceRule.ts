@@ -135,6 +135,7 @@ export const useImportReplaceRuleStore = defineStore('importReplaceRule', () => 
         getDefaultByFileType,
         addRuleSet,
         modifyRuleSet,
+        setDefaultRuleSet,
         deleteRuleSet
     };
 });
