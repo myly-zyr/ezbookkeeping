@@ -86,6 +86,12 @@ func (p *alipayTransactionDataRowParser) Parse(ctx core.Context, user *models.Us
 		targetName = dataRow.GetData(p.columns.targetNameColumnName)
 	}
 
+	relatedAccountName := ""
+
+	if p.hasOriginalColumn(p.columns.relatedAccountColumnName) {
+		relatedAccountName = dataRow.GetData(p.columns.relatedAccountColumnName)
+	}
+
 	statusName := ""
 
 	if p.hasOriginalColumn(p.columns.statusColumnName) {
@@ -130,45 +136,45 @@ func (p *alipayTransactionDataRowParser) Parse(ctx core.Context, user *models.Us
 
 			if statusName == alipayTransactionDataStatusRefundSuccessName {
 				if len(productName) > len(alipayTransactionDataProductNamePurchaseInvestmentText) && strings.Index(productName, alipayTransactionDataProductNamePurchaseInvestmentText) == len(productName)-len(alipayTransactionDataProductNamePurchaseInvestmentText) { // purchase investment
-					data[datatable.TRANSACTION_DATA_TABLE_ACCOUNT_NAME] = targetName
-					data[datatable.TRANSACTION_DATA_TABLE_RELATED_ACCOUNT_NAME] = targetName
+					data[datatable.TRANSACTION_DATA_TABLE_ACCOUNT_NAME] = relatedAccountName
+					data[datatable.TRANSACTION_DATA_TABLE_RELATED_ACCOUNT_NAME] = relatedAccountName
 				} else if len(productName) > len(alipayTransactionDataProductNamePurchaseInvestmentRefundText) && strings.Index(productName, alipayTransactionDataProductNamePurchaseInvestmentRefundText) == len(productName)-len(alipayTransactionDataProductNamePurchaseInvestmentRefundText) { // purchase investment refund
-					data[datatable.TRANSACTION_DATA_TABLE_ACCOUNT_NAME] = targetName
-					data[datatable.TRANSACTION_DATA_TABLE_RELATED_ACCOUNT_NAME] = targetName
+					data[datatable.TRANSACTION_DATA_TABLE_ACCOUNT_NAME] = relatedAccountName
+					data[datatable.TRANSACTION_DATA_TABLE_RELATED_ACCOUNT_NAME] = relatedAccountName
 				} else {
 					data[datatable.TRANSACTION_DATA_TABLE_TRANSACTION_TYPE] = alipayTransactionTypeNameMapping[models.TRANSACTION_TYPE_INCOME]
-					data[datatable.TRANSACTION_DATA_TABLE_ACCOUNT_NAME] = targetName
+					data[datatable.TRANSACTION_DATA_TABLE_ACCOUNT_NAME] = relatedAccountName
 					data[datatable.TRANSACTION_DATA_TABLE_RELATED_ACCOUNT_NAME] = ""
 				}
 			} else {
 				if len(productName) > len(alipayTransactionDataProductNameEarningText) && strings.Index(productName, alipayTransactionDataProductNameEarningText) == len(productName)-len(alipayTransactionDataProductNameEarningText) { // earning
 					data[datatable.TRANSACTION_DATA_TABLE_TRANSACTION_TYPE] = alipayTransactionTypeNameMapping[models.TRANSACTION_TYPE_INCOME]
-					data[datatable.TRANSACTION_DATA_TABLE_ACCOUNT_NAME] = targetName
-					data[datatable.TRANSACTION_DATA_TABLE_RELATED_ACCOUNT_NAME] = targetName
+					data[datatable.TRANSACTION_DATA_TABLE_ACCOUNT_NAME] = relatedAccountName
+					data[datatable.TRANSACTION_DATA_TABLE_RELATED_ACCOUNT_NAME] = relatedAccountName
 				} else if len(productName) > len(alipayTransactionDataProductNamePurchaseInvestmentText) && strings.Index(productName, alipayTransactionDataProductNamePurchaseInvestmentText) == len(productName)-len(alipayTransactionDataProductNamePurchaseInvestmentText) { // purchase investment
-					data[datatable.TRANSACTION_DATA_TABLE_ACCOUNT_NAME] = targetName
-					data[datatable.TRANSACTION_DATA_TABLE_RELATED_ACCOUNT_NAME] = targetName
+					data[datatable.TRANSACTION_DATA_TABLE_ACCOUNT_NAME] = relatedAccountName
+					data[datatable.TRANSACTION_DATA_TABLE_RELATED_ACCOUNT_NAME] = relatedAccountName
 				} else if strings.Index(productName, alipayTransactionDataProductNameSellInvestmentRefundText) >= 0 { // sell investment
-					data[datatable.TRANSACTION_DATA_TABLE_ACCOUNT_NAME] = targetName
-					data[datatable.TRANSACTION_DATA_TABLE_RELATED_ACCOUNT_NAME] = targetName
+					data[datatable.TRANSACTION_DATA_TABLE_ACCOUNT_NAME] = relatedAccountName
+					data[datatable.TRANSACTION_DATA_TABLE_RELATED_ACCOUNT_NAME] = relatedAccountName
 				} else if strings.Index(productName, alipayTransactionDataProductNameTransferToAlipayPrefix) == 0 { // transfer to alipay wallet
 					data[datatable.TRANSACTION_DATA_TABLE_ACCOUNT_NAME] = ""
 					data[datatable.TRANSACTION_DATA_TABLE_RELATED_ACCOUNT_NAME] = localeTextItems.DataConverterTextItems.Alipay
 				} else if strings.Index(productName, alipayTransactionDataProductNameTransferFromAlipayPrefix) == 0 { // transfer from alipay wallet
 					data[datatable.TRANSACTION_DATA_TABLE_ACCOUNT_NAME] = localeTextItems.DataConverterTextItems.Alipay
-					data[datatable.TRANSACTION_DATA_TABLE_RELATED_ACCOUNT_NAME] = targetName
+					data[datatable.TRANSACTION_DATA_TABLE_RELATED_ACCOUNT_NAME] = relatedAccountName
 				} else if strings.Index(productName, alipayTransactionDataProductNameTransferInText) >= 0 { // transfer in
-					data[datatable.TRANSACTION_DATA_TABLE_ACCOUNT_NAME] = targetName
-					data[datatable.TRANSACTION_DATA_TABLE_RELATED_ACCOUNT_NAME] = targetName
+					data[datatable.TRANSACTION_DATA_TABLE_ACCOUNT_NAME] = relatedAccountName
+					data[datatable.TRANSACTION_DATA_TABLE_RELATED_ACCOUNT_NAME] = relatedAccountName
 				} else if strings.Index(productName, alipayTransactionDataProductNameTransferOutText) >= 0 { // transfer out
-					data[datatable.TRANSACTION_DATA_TABLE_ACCOUNT_NAME] = targetName
-					data[datatable.TRANSACTION_DATA_TABLE_RELATED_ACCOUNT_NAME] = targetName
+					data[datatable.TRANSACTION_DATA_TABLE_ACCOUNT_NAME] = relatedAccountName
+					data[datatable.TRANSACTION_DATA_TABLE_RELATED_ACCOUNT_NAME] = relatedAccountName
 				} else if strings.Index(productName, alipayTransactionDataProductNameTransferText) >= 0 { // transfer
-					data[datatable.TRANSACTION_DATA_TABLE_ACCOUNT_NAME] = targetName
-					data[datatable.TRANSACTION_DATA_TABLE_RELATED_ACCOUNT_NAME] = targetName
+					data[datatable.TRANSACTION_DATA_TABLE_ACCOUNT_NAME] = relatedAccountName
+					data[datatable.TRANSACTION_DATA_TABLE_RELATED_ACCOUNT_NAME] = relatedAccountName
 				} else if strings.Index(productName, alipayTransactionDataProductNameRepaymentText) >= 0 { // repayment
-					data[datatable.TRANSACTION_DATA_TABLE_ACCOUNT_NAME] = targetName
-					data[datatable.TRANSACTION_DATA_TABLE_RELATED_ACCOUNT_NAME] = targetName
+					data[datatable.TRANSACTION_DATA_TABLE_ACCOUNT_NAME] = relatedAccountName
+					data[datatable.TRANSACTION_DATA_TABLE_RELATED_ACCOUNT_NAME] = relatedAccountName
 				} else {
 					log.Warnf(ctx, "[alipay_transaction_data_row_parser.Parse] skip parsing transaction in row \"%s\", because product name (\"%s\") is unknown", rowId, productName)
 					return nil, false, nil
