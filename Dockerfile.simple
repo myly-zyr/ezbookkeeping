@@ -1,0 +1,17 @@
+FROM alpine:3.23.4
+
+RUN mkdir -p /ezbookkeeping/public /ezbookkeeping/templates /ezbookkeeping/log /ezbookkeeping/storage /ezbookkeeping/data /ezbookkeeping/conf
+
+COPY ezbookkeeping /ezbookkeeping/ezbookkeeping
+COPY dist/ /ezbookkeeping/public/
+COPY templates/ /ezbookkeeping/templates/
+COPY docker/docker-entrypoint.sh /docker-entrypoint.sh
+
+RUN chmod +x /ezbookkeeping/ezbookkeeping /docker-entrypoint.sh && \
+    chown -R 1000:1000 /ezbookkeeping
+
+WORKDIR /ezbookkeeping
+EXPOSE 8089
+
+ENTRYPOINT ["/docker-entrypoint.sh"]
+CMD ["/ezbookkeeping/ezbookkeeping", "server", "run"]
