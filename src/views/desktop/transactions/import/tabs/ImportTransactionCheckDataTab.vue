@@ -1976,7 +1976,19 @@ function showReplaceAllTypesDialog(): void {
                         continue;
                     }
 
-                    if (rule.dataType === 'expenseCategory' || rule.dataType === 'incomeCategory' || rule.dataType === 'transferCategory') {
+                    if (rule.dataType === 'transactionTypeKeyword') {
+                        if (importTransaction.type === TransactionType.Transfer && importTransaction.comment) {
+                            if (importTransaction.comment.includes(rule.sourceValue)) {
+                                if (rule.targetId === 'income') {
+                                    importTransaction.type = TransactionType.Income;
+                                    updated = true;
+                                } else if (rule.targetId === 'expense') {
+                                    importTransaction.type = TransactionType.Expense;
+                                    updated = true;
+                                }
+                            }
+                        }
+                    } else if (rule.dataType === 'expenseCategory' || rule.dataType === 'incomeCategory' || rule.dataType === 'transferCategory') {
                         if (importTransaction.type !== TransactionType.ModifyBalance && importTransaction.originalCategoryName === rule.sourceValue) {
                             if (rule.dataType === 'expenseCategory' && importTransaction.type === TransactionType.Expense) {
                                 importTransaction.categoryId = rule.targetId;

@@ -99,6 +99,10 @@
                                                       {
                                                           value: 'tag',
                                                           name: tt('Transaction Tag')
+                                                      },
+                                                      {
+                                                          value: 'transactionTypeKeyword',
+                                                          name: tt('Transaction Type Keyword')
                                                       }
                                                   ]"
                                                   v-model="newRule.dataType"
@@ -106,12 +110,18 @@
                                         />
                                     </td>
                                     <td>
+                                        <v-text-field class="w-100" density="compact" variant="underlined"
+                                                      persistent-placeholder
+                                                      :disabled="loading"
+                                                      :placeholder="tt('Enter keyword')"
+                                                      v-model="newRule.sourceValue"
+                                                      v-if="newRule.dataType === 'transactionTypeKeyword'" />
                                         <v-autocomplete class="w-100" density="compact" variant="underlined"
                                                         item-title="name" item-value="value" persistent-placeholder
                                                         :disabled="loading" :items="sourceItems"
                                                         :no-data-text="noSourceItemText"
-                                                        v-model="newRule.sourceValue">
-                                        </v-autocomplete>
+                                                        v-model="newRule.sourceValue"
+                                                        v-else />
                                     </td>
                                     <td>
                                         <two-column-select density="compact" variant="underlined"
@@ -206,6 +216,14 @@
                                                 </v-list-item>
                                             </template>
                                         </v-autocomplete>
+                                    </td>
+                                    <td>
+                                        <v-select class="w-100" density="compact" variant="underlined"
+                                                  item-title="name" item-value="value"
+                                                  :disabled="loading"
+                                                  :items="[{name: tt('Income'), value: 'income'}, {name: tt('Expense'), value: 'expense'}]"
+                                                  v-model="newRule.targetId"
+                                                  v-if="newRule.dataType === 'transactionTypeKeyword'" />
                                     </td>
                                     <td class="text-right">
                                         <v-btn density="comfortable" variant="tonal" color="primary"
@@ -369,6 +387,8 @@ const sourceItems = computed<NameValue[]>(() => {
             return sourceAccountNames.value;
         case 'tag':
             return sourceTagNames.value;
+        case 'transactionTypeKeyword':
+            return [];
         default:
             return [];
     }
@@ -386,6 +406,8 @@ const noSourceItemText = computed<string>(() => {
             return tt('No available account');
         case 'tag':
             return tt('No available tag');
+        case 'transactionTypeKeyword':
+            return tt('Enter keyword');
         default:
             return '';
     }
@@ -403,6 +425,8 @@ function getRuleTypeDisplayName(rule: ImportTransactionReplaceRule): string {
             return tt('Account');
         case 'tag':
             return tt('Transaction Tag');
+        case 'transactionTypeKeyword':
+            return tt('Transaction Type Keyword');
         default:
             return '';
     }
@@ -420,6 +444,8 @@ function getRuleTargetValueDisplayName(rule: ImportTransactionReplaceRule): stri
             return getAccountDisplayName(rule.targetId);
         case 'tag':
             return allTagsMap.value[rule.targetId]?.name ?? '';
+        case 'transactionTypeKeyword':
+            return rule.targetId === 'income' ? tt('Income') : tt('Expense');
         default:
             return '';
     }

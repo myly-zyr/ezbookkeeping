@@ -344,7 +344,7 @@ export class ImportTransactionDataMapping {
     }
 }
 
-export type ImportTransactionReplaceRuleDataType = 'expenseCategory' | 'incomeCategory' | 'transferCategory' | 'account' | 'tag';
+export type ImportTransactionReplaceRuleDataType = 'expenseCategory' | 'incomeCategory' | 'transferCategory' | 'account' | 'tag' | 'transactionTypeKeyword';
 
 export class ImportTransactionReplaceRule {
     public dataType: ImportTransactionReplaceRuleDataType;
