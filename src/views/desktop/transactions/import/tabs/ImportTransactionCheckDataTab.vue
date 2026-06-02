@@ -2052,7 +2052,9 @@ function showBatchCreateInvalidItemDialog(type: BatchCreateDialogDataType, inval
                 let updated = false;
 
                 if (type === 'account') {
+                    console.log('[Handler] sourceTargetMap:', JSON.stringify(sourceTargetMap));
                     const sourceTarget = sourceTargetMap[importTransaction.originalSourceAccountName];
+                    console.log('[Handler] txn:', importTransaction.originalSourceAccountName, '->', sourceTarget);
                     if (sourceTarget && (!importTransaction.sourceAccountId || importTransaction.sourceAccountId === '0' || !allAccountsMap.value[importTransaction.sourceAccountId])) {
                         importTransaction.sourceAccountId = sourceTarget;
                         updated = true;

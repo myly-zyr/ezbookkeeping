@@ -41,10 +41,8 @@
                             v-model="selectedAccountCategory"
                             :label="tt('Account Category')"
                             :disabled="submitting"
-                            density="compact"
                             variant="outlined"
-                            class="mb-2"
-                            persistent-placeholder
+                            class="mb-4"
                         />
                     </v-col>
                     <v-col cols="12" class="px-0">
@@ -104,6 +102,7 @@ import { type TransactionCategoryCreateRequest, type TransactionCategoryCreateWi
 import { type TransactionTagCreateRequest, TransactionTag } from '@/models/transaction_tag.ts';
 
 import { isDefined, arrayItemToObjectField } from '@/lib/common.ts';
+import { generateRandomUUID } from '@/lib/misc.ts';
 
 import {
     mdiSelectAll,
@@ -134,7 +133,7 @@ const submitting = ref<boolean>(false);
 const type = ref<BatchCreateDialogDataType>('expenseCategory');
 const invalidItems = ref<NameValue[] | undefined>([]);
 const selectedNames = ref<string[]>([]);
-const selectedAccountCategory = ref<number>(AccountCategory.CheckingAccount.type);
+const selectedAccountCategory = ref<number>(AccountCategory.Cash.type);
 const accountCategories = AccountCategory.values().map(cat => ({
     type: cat.type,
     name: tt(cat.name),
@@ -359,6 +358,7 @@ function confirm(): void {
             if (index >= selectedNames.value.length) {
                 submitting.value = false;
                 showState.value = false;
+                console.log('[BatchCreate] Final sourceTargetMap:', JSON.stringify(sourceTargetMap));
                 resolveFunc?.({ sourceTargetMap });
                 return;
             }
@@ -366,19 +366,24 @@ function confirm(): void {
             const accountName = selectedNames.value[index];
             const account = Account.createNewAccount(accountCategory!, defaultCurrency, balanceTime);
             account.name = accountName || '';
+            const sessionId = generateRandomUUID();
 
+            console.log('[BatchCreate] Creating account:', accountName);
             accountsStore.saveAccount({
                 account: account,
                 subAccounts: [],
                 isEdit: false,
-                clientSessionId: ''
+                clientSessionId: sessionId
             }).then(savedAccount => {
+                console.log('[BatchCreate] Created:', savedAccount.name, 'id:', savedAccount.id);
                 const originalItem = (invalidItems.value || []).find(item => item.name === accountName);
                 if (originalItem) {
                     sourceTargetMap[originalItem.value] = (savedAccount.id as string) || '';
+                    console.log('[BatchCreate] Mapped:', originalItem.value, '->', savedAccount.id);
                 }
                 createNextAccount(index + 1);
             }).catch(error => {
+                console.error('[BatchCreate] Failed:', accountName, error);
                 if (!error.processed) {
                     snackbar.value?.showError(error);
                 }
@@ -386,14 +391,8 @@ function confirm(): void {
             });
         }
 
-        accountsStore.loadAllAccounts({ force: true }).then(() => {
-            createNextAccount(0);
-        }).catch(error => {
-            submitting.value = false;
-            if (!error.processed) {
-                snackbar.value?.showError(error);
-            }
-        });
+        
+        createNextAccount(0);
     }
 }
 
